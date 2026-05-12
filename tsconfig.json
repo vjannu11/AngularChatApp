@@ -1,0 +1,84 @@
+# NgChat Backend
+
+Node.js + Express + WebSocket backend for the NgChat Angular application.
+
+## Stack
+
+- **Express** — REST API
+- **ws** — WebSocket server
+- **bcryptjs** — password hashing
+- **jsonwebtoken** — JWT auth
+- **TypeScript** throughout
+- **In-memory store** (no database needed to run)
+
+## Quick Start
+
+```bash
+npm install
+npm run dev
+```
+
+Server starts on `http://localhost:3000`.
+
+## REST Endpoints
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| POST | `/api/auth/register` | ✗ | Register new user |
+| POST | `/api/auth/login` | ✗ | Login, receive JWT |
+| GET | `/api/channels` | ✓ | List all channels |
+| GET | `/api/channels/:id/messages` | ✓ | Last 50 messages |
+| POST | `/api/channels` | ✓ | Create a channel |
+| GET | `/health` | ✗ | Health check |
+
+## WebSocket
+
+Connect to `ws://localhost:3000?token=<JWT>`.
+
+### Events you send (client → server)
+```json
+{ "type": "message:new", "payload": { "channelId": "ch-general", "content": "Hello!" } }
+{ "type": "message:edit", "payload": { "messageId": "...", "content": "Edited text" } }
+{ "type": "message:delete", "payload": { "messageId": "..." } }
+```
+
+### Events you receive (server → client)
+```json
+{ "type": "message:new", "payload": { /* Message object */ } }
+{ "type": "message:edit", "payload": { /* Message object */ } }
+{ "type": "message:delete", "payload": { "id": "..." } }
+{ "type": "user:status", "payload": { "userId": "...", "status": "online|offline" } }
+```
+
+## Seed Data
+
+On startup the server seeds three channels: `#general`, `#random`, `#angular`.
+
+## Environment Variables
+
+| Variable | Default | Description |
+|---|---|---|
+| `PORT` | `3000` | HTTP/WS port |
+| `JWT_SECRET` | `ng-chat-dev-secret-change-in-prod` | JWT signing secret |
+| `FRONTEND_ORIGIN` | `http://localhost:4200` | CORS allowed origin |
+
+For production, create a `.env` file:
+```
+PORT=3000
+JWT_SECRET=your-strong-secret-here
+FRONTEND_ORIGIN=https://your-frontend-domain.com
+```
+
+## Running Both Frontend + Backend
+
+```bash
+# Terminal 1 — backend
+cd ng-chat-backend
+npm install && npm run dev
+
+# Terminal 2 — frontend
+cd ng-chat
+npm install && ng serve
+```
+
+Open http://localhost:4200, register an account, and start chatting.

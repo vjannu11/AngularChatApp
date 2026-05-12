@@ -1,0 +1,57 @@
+// ─── Stored entities ─────────────────────────────────────────────────────────
+export interface StoredUser {
+  id: string;
+  username: string;
+  displayName: string;
+  passwordHash: string;
+  avatarUrl?: string;
+  status: 'online' | 'away' | 'offline';
+  createdAt: string;
+}
+
+export interface PublicUser {
+  id: string;
+  username: string;
+  displayName: string;
+  avatarUrl?: string;
+  status: 'online' | 'away' | 'offline';
+  createdAt: string;
+}
+
+export interface Channel {
+  id: string;
+  name: string;
+  description?: string;
+  isPrivate: boolean;
+  memberCount: number;
+  lastActivity?: string;
+}
+
+export interface Message {
+  id: string;
+  channelId: string;
+  author: PublicUser;
+  content: string;
+  createdAt: string;
+  editedAt?: string;
+  type: 'text' | 'system' | 'file';
+}
+
+// ─── WebSocket ────────────────────────────────────────────────────────────────
+export interface WsEvent<T = unknown> {
+  type: string;
+  payload: T;
+}
+
+export interface WsClient {
+  userId: string;
+  ws: import('ws').WebSocket;
+}
+
+// ─── JWT Payload ──────────────────────────────────────────────────────────────
+export interface JwtPayload {
+  sub: string; // userId
+  username: string;
+  iat?: number;
+  exp?: number;
+}
