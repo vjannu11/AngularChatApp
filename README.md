@@ -1,64 +1,101 @@
 # NgChat — Real-Time Angular Chat Platform
 
-A production-grade real-time chat application built with Angular 17, showcasing modern Angular patterns and best practices.
+A full-stack real-time chat application built with Angular 17 (frontend) and Node.js + Express + WebSockets (backend). Features JWT authentication, live messaging, and modern Angular 17 patterns throughout.
 
 ---
 
-## ✨ Feature Highlights
+## 📋 Table of Contents
 
-- **Real-time messaging** via WebSockets (RxJS `webSocket`)
-- **JWT-based authentication** with auto-attach interceptor
-- **Reactive state management** using Angular Signals
-- **Standalone components** throughout (no NgModules)
-- **Lazy-loaded feature routes** (`loadComponent` / `loadChildren`)
-- **Route guards** (`authGuard`, `guestGuard`)
-- **Reactive forms** with full validation
-- **Auto-reconnecting WebSocket** with exponential backoff
+- [Quick Start](#-quick-start)
+- [Project Structure](#-project-structure)
+- [Frontend](#-frontend)
+- [Backend](#-backend)
+- [Running Both Together](#-running-both-together)
+- [API Reference](#-api-reference)
+- [WebSocket Events](#-websocket-events)
 
 ---
 
-## 🏗️ Architecture
+## ⚡ Quick Start
+
+> You'll need two terminals open — one for the backend, one for the frontend.
+
+### Terminal 1 — Backend
+```bash
+cd ng-chat-backend
+npm install
+npm run dev
+```
+Backend starts at `http://localhost:3000`.
+
+### Terminal 2 — Frontend
+```bash
+cd ng-chat
+npm install
+ng serve
+```
+Frontend starts at `http://localhost:4200`.
+
+Open your browser to **http://localhost:4200**, register an account, and start chatting. Open a second tab to chat between two users in real time.
+
+---
+
+## 📁 Project Structure
 
 ```
-src/app/
-├── core/                     # Singleton services, guards, interceptors, models
-│   ├── guards/
-│   │   └── auth.guard.ts          # authGuard, guestGuard (functional guards)
-│   ├── interceptors/
-│   │   └── jwt.interceptor.ts     # Attaches Bearer token to every HTTP request
-│   ├── models/
-│   │   └── index.ts               # All TypeScript interfaces (User, Message, Channel…)
-│   └── services/
-│       ├── auth.service.ts        # JWT login/register/logout + Signal-based state
-│       ├── channel.service.ts     # Channel CRUD + active channel Signal
-│       ├── message.service.ts     # Message history + real-time WS listeners
-│       └── websocket.service.ts   # RxJS WebSocketSubject wrapper, reconnect logic
+/
+├── ng-chat/               # Angular 17 frontend
+│   └── src/app/
+│       ├── core/          # Guards, interceptors, models, services
+│       ├── features/      # Auth (login/register) + Chat (shell, sidebar, messages)
+│       ├── shared/        # Reusable pipes
+│       ├── app.config.ts  # Standalone bootstrap (no AppModule)
+│       └── app.routes.ts  # Top-level lazy routes
 │
-├── features/
-│   ├── auth/
-│   │   ├── auth.routes.ts
-│   │   ├── login/login.component.ts
-│   │   └── register/register.component.ts
-│   └── chat/
-│       ├── chat.routes.ts
-│       ├── chat-shell/chat-shell.component.ts   # Layout shell
-│       └── components/
-│           ├── channel-sidebar/                 # Channel list + user info
-│           ├── message-list/                    # Scrolling message feed
-│           └── message-input/                   # Textarea + send button
-│
-├── shared/
-│   └── pipes/
-│       └── time-ago.pipe.ts                     # Relative timestamp pipe
-│
-├── app.component.ts      # Root component (just <router-outlet>)
-├── app.config.ts         # Standalone bootstrap config (no AppModule)
-└── app.routes.ts         # Top-level lazy routes
+└── ng-chat-backend/       # Node.js + Express + WebSocket backend
+    └── src/
+        ├── routes/        # auth.routes.ts, channel.routes.ts
+        ├── index.ts       # Server entry point
+        ├── ws.ts          # WebSocket handler
+        ├── db.ts          # In-memory store (seeded on startup)
+        ├── jwt.ts         # Sign/verify JWT
+        └── middleware.ts  # requireAuth middleware
 ```
 
 ---
 
-## 🛠️ Modern Angular Patterns Used
+## 🖥️ Frontend
+
+### Prerequisites
+- Node.js 18+
+- Angular CLI 17+
+
+```bash
+npm install -g @angular/cli
+```
+
+### Install & Run
+
+```bash
+cd ng-chat
+npm install
+ng serve
+```
+
+### Environment Configuration
+
+Edit `src/environments/environment.ts` to point at your backend:
+
+```ts
+export const environment = {
+  production: false,
+  apiUrl: 'http://localhost:3000/api',
+  wsUrl:  'ws://localhost:3000',
+  jwtKey: 'ng_chat_token',
+};
+```
+
+### Modern Angular Patterns Used
 
 | Pattern | Where |
 |---|---|
@@ -66,74 +103,123 @@ src/app/
 | Angular Signals | `AuthService`, `ChannelService`, `MessageService` |
 | Functional route guards | `auth.guard.ts` |
 | Functional HTTP interceptors | `jwt.interceptor.ts` |
-| `@for` / `@if` control flow | All templates (new syntax, not `*ngFor` / `*ngIf`) |
+| `@for` / `@if` control flow | All templates (Angular 17 syntax) |
 | `inject()` function | All dependency injection |
 | `NonNullableFormBuilder` | Login & Register forms |
 | `loadComponent` lazy loading | Every route |
 | RxJS `webSocket` | `WebSocketService` |
 | Exponential backoff retry | `WebSocketService` |
 
+### Features
+- JWT-based login and registration with protected routes
+- Channel sidebar listing all available channels
+- Real-time message feed with live updates
+- Auto-scrolling message list
+- Auto-reconnecting WebSocket with exponential backoff
+- Reactive forms with full validation
+
 ---
 
-## 🚀 Getting Started
+## 🔧 Backend
 
 ### Prerequisites
 - Node.js 18+
-- Angular CLI 17+: `npm install -g @angular/cli`
 
 ### Install & Run
 
 ```bash
+cd ng-chat-backend
 npm install
-ng serve
+npm run dev     # development (auto-restarts on file change)
+npm start       # production (runs compiled JS from /dist)
 ```
 
-Open [http://localhost:4200](http://localhost:4200).
+### Environment Variables
 
-### Environment Configuration
-
-Edit `src/environments/environment.ts`:
-
-```ts
-export const environment = {
-  apiUrl: 'http://localhost:3000/api',
-  wsUrl:  'ws://localhost:3000',
-  jwtKey: 'ng_chat_token',
-};
-```
-
----
-
-## 🔌 Backend Contract
-
-The app expects a REST + WebSocket backend:
-
-### REST Endpoints
-| Method | Path | Body |
+| Variable | Default | Description |
 |---|---|---|
-| POST | `/api/auth/login` | `{ username, password }` |
-| POST | `/api/auth/register` | `{ username, password, displayName }` |
-| GET | `/api/channels` | — |
-| GET | `/api/channels/:id/messages` | — |
+| `PORT` | `3000` | HTTP/WS port |
+| `JWT_SECRET` | `ng-chat-dev-secret-change-in-prod` | JWT signing secret |
+| `FRONTEND_ORIGIN` | `http://localhost:4200` | CORS allowed origin |
 
-### WebSocket Events (sent)
-| type | payload |
-|---|---|
-| `message:new` | `{ channelId, content }` |
+For production, create a `.env` file in `ng-chat-backend/`:
+```
+PORT=3000
+JWT_SECRET=your-strong-secret-here
+FRONTEND_ORIGIN=https://your-frontend-domain.com
+```
 
-### WebSocket Events (received)
-| type | payload |
-|---|---|
-| `message:new` | `Message` object |
-| `message:edit` | `Message` object |
-| `message:delete` | `{ id: string }` |
+### Seed Data
+
+Three channels are created automatically on server startup: `#general`, `#random`, and `#angular`. A welcome message is posted to `#general`. Data is stored in memory and resets when the server restarts — swap out `db.ts` to connect a real database (PostgreSQL, MongoDB, etc.).
 
 ---
 
-## 📐 Key Design Decisions
+## 🚀 Running Both Together
 
-- **Signals over BehaviorSubject** — simpler reactive state without subscription management
-- **No NgRx** — appropriate for this scale; Signals + services are sufficient
-- **Functional interceptors/guards** — Angular 15+ best practice over class-based
+```
+Browser (localhost:4200)
+        │
+        │  HTTP (REST)         WebSocket
+        ▼                           ▼
+Angular Frontend  ──────────►  Express Backend (localhost:3000)
+                                    │
+                              In-Memory Store
+                           (users, channels, messages)
+```
+
+1. Start the backend first (`npm run dev` in `ng-chat-backend/`)
+2. Start the frontend (`ng serve` in `ng-chat/`)
+3. Open `http://localhost:4200`
+4. Register a new account
+5. Select a channel from the sidebar and send a message
+6. Open a second browser tab, register another account, and chat between them in real time
+
+---
+
+## 📡 API Reference
+
+All routes prefixed with `/api`. Protected routes require `Authorization: Bearer <token>` header.
+
+| Method | Path | Auth | Body | Description |
+|---|---|---|---|---|
+| POST | `/api/auth/register` | ✗ | `{ username, password, displayName }` | Register new user |
+| POST | `/api/auth/login` | ✗ | `{ username, password }` | Login, returns JWT |
+| GET | `/api/channels` | ✓ | — | List all channels |
+| GET | `/api/channels/:id/messages` | ✓ | — | Last 50 messages in channel |
+| POST | `/api/channels` | ✓ | `{ name, description?, isPrivate? }` | Create a channel |
+| GET | `/health` | ✗ | — | Health check |
+
+---
+
+## 🔌 WebSocket Events
+
+Connect to `ws://localhost:3000?token=<JWT>`.
+
+### Sent by client → server
+
+```json
+{ "type": "message:new",    "payload": { "channelId": "ch-general", "content": "Hello!" } }
+{ "type": "message:edit",   "payload": { "messageId": "...", "content": "Edited text" } }
+{ "type": "message:delete", "payload": { "messageId": "..." } }
+```
+
+### Received by client ← server
+
+```json
+{ "type": "message:new",    "payload": { /* Full Message object */ } }
+{ "type": "message:edit",   "payload": { /* Full Message object */ } }
+{ "type": "message:delete", "payload": { "id": "..." } }
+{ "type": "user:status",    "payload": { "userId": "...", "status": "online | offline" } }
+```
+
+---
+
+## 🏗️ Key Design Decisions
+
+- **Signals over BehaviorSubject** — simpler reactive state without manual subscription management
+- **No NgRx** — Signals + services are sufficient at this scale
+- **Functional interceptors/guards** — Angular 15+ best practice over class-based alternatives
 - **Lazy loading everywhere** — routes and components loaded only when needed
 - **`@for`/`@if` syntax** — Angular 17 control flow, avoids importing `NgIf`/`NgFor`
+- **In-memory store** — no database setup required to run and demo the app
